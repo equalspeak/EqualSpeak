@@ -1,0 +1,63 @@
+%% The following is inspired by 
+%% https://tex.stackexchange.com/questions/454944/is-there-screen-reader-software-or-a-built-in-method-that-supports-latex-equat/505462#505462
+%% I'd like to make it work on a broader range of math formulas such as matrices, roots, norms, 
+%% As a basic target I'd like to be able to use this to speak out the equations of linear algebra
+
+\documentclass{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{tokcycle,amsmath}
+
+\newcommand{\mymat}[1]{\begin{pmatrix} #1 \end{pmatrix}}
+
+\tokcycleenvironment\speakifytext
+  {\tcremap[x]{##1}}
+  {\processtoks{##1}}
+  {\tcremap[1]{##1}}
+  {\addcytoks{##1}}
+\newcommand*\tcmapto[3][\noexpand\pauseafter]{%
+  \expandafter\def\csname tcmapto\string#2\endcsname{\text{#3 }#1}}
+\newcommand*\tcmaptomacro[3][\noexpand\pauseafter]{%
+  \expandafter\def\csname tcmapto\string#2\endcsname{#3#1}}
+\newcommand*\tcremap[2][1]{\ifcsname tcmapto\string#2\endcsname
+  \addcytoks[#1]{\csname tcmapto\string#2\endcsname}\else\addcytoks{#2}\fi}
+\newcommand\pauseafter[1]{\tctestifcatnx#1\relax{#1}{#1,}}
+\tcmapto[] ({, left paren,}
+\tcmapto[] ){, right paren ,}
+\tcmapto   ^{, raised to the power}
+\tcmapto   _{, sub}
+\tcmaptomacro[] \frac\readfrac
+\newcommand\readfrac[2]{\text{, the fraction, } #1 \text{, divided by, }#2%
+  \text{, end fraction, }}
+% matrix read aloud
+\tcmapto   &{, }
+\tcmapto   \\{, end row}
+\tcmaptomacro[] \mymat\readmatrix
+\newcommand\readmatrix[1]{\text{, the matrix, } #1 \text{, end matrix, }}
+
+
+  \begin{document}
+\section{Making \LaTeX{} Math Audibly Legible}
+We use the new tokcycle package to transform math symbols into spoken text.
+See if you agree.
+
+\speakifytext
+\begin{equation}
+       x_i^2 + y^2 = (z^2 + 1)
+    \end{equation}
+    \endspeakifytext
+
+    \speakifytext
+    \begin{equation*}
+        \mymat{ 1 & 2 \\ 3 & 4 }
+     \end{equation*} 
+    \endspeakifytext
+\begin{equation}
+    x_i^2 + y^2 = (z^2 + 1)
+ \end{equation}
+Or this one:
+    \begin{equation}
+       Z = \frac{x+1}{2}
+    \end{equation}
+\end{document}
