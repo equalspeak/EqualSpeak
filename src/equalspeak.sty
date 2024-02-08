@@ -1,0 +1,87 @@
+\ProvidesPackage{equalspeak}[2024/02 package Equalspeak]
+
+\usepackage[draft]{pdfcomment}
+% \usepackage{accsupp}  % makes screen reading of math equations.
+
+%% Equalspeak
+\usepackage{tokcycle} % convert math to english-ish
+
+
+%% TOKENIZER
+\tokcycleenvironment\speakifytext
+  {\tcremap[x]{##1}}
+  {\processtoks{##1}}
+  {\tcremap[1]{##1}}
+  {\addcytoks{##1}}
+\newcommand*\tcmapto[3][\noexpand\pauseafter]{%
+  \expandafter\def\csname tcmapto\string#2\endcsname{\text{#3 }#1}}
+\newcommand*\tcmaptomacro[3][\noexpand\pauseafter]{%
+  \expandafter\def\csname tcmapto\string#2\endcsname{#3#1}}
+\newcommand*\tcremap[2][1]{\ifcsname tcmapto\string#2\endcsname
+  \addcytoks[#1]{\csname tcmapto\string#2\endcsname}\else\addcytoks{#2}\fi}
+\newcommand\pauseafter[1]{\tctestifcatnx#1\relax{#1}{#1,}}
+
+%% CONVERT EQUATION TO CENTERED WITH WORD WRAP
+% \tcmapto[] \align*{center}
+% \tcmapto[] \endalign*{center}
+
+%% READ PARENS
+\tcmapto[] ({, left paren,}
+\tcmapto[] ){, right paren ,}
+
+%% READ BRACE
+\tcmapto[] \left{}%gobble size of brace
+\tcmapto[] \right{}%gobble size of brace
+
+%% READ BRACE
+\tcmapto[] \{{, the set of,}
+\tcmapto[] \}{, end of set,}
+
+%% READ SUB/EXP
+\tcmapto   ^{, raised to the power}
+\tcmapto   _{, sub}
+
+%% READ FRACTION
+\tcmaptomacro[] \frac\readfrac
+\newcommand\readfrac[2]{\text{, the fraction, } #1%
+   \text{, divided by, }#2%
+   \text{, end fraction, }}
+
+
+%% HACK: pmatrix read
+\newcommand{\pmat}[1]{\begin{pmatrix} #1 \end{pmatrix}}
+% matrix read aloud
+\tcmapto   &{, }
+\tcmapto   \\{\small end row\newline}
+\tcmaptomacro[] \pmat\readmatrix
+%% ISSUE: Matrices fill up too much of the page when written out so need to wrap in a minipage.
+%% ALSO: because we are overriding `\\` with "end row" need to use `\newline` to end a line.
+\newcommand\readmatrix[1]{\begin{minipage}{\textwidth}\text{\small the matrix, } #1 \text{\small end matrix, }\end{minipage} }
+
+
+%% THIS BIT OF CODE MAKES IMAGES USE THE "alt=" 
+%% DATA APPEAR AS A POPUP TEXT ON MOUSE OVER GOOD FOR SOME SCREEN READERS OF PDF
+% \makeatletter
+% \IfDocumentMetadataTF{}
+%  {
+%   \usepackage{pdfcomment,patchcmd}
+%   \newcommand\tooltiptext{no text available!}
+%   \define@key{Gin}{alt}{\def\tooltiptext{#1}}
+%   \patchcmd\Gin@setfile{\box\z@}{\pdftooltip{\copy\z@}{\tooltiptext}}{}{\fail}
+%  } 
+% \makeatother 
+
+%% Image with screen reader alternate text and white background
+\newsavebox\imagebox
+\newcommand*{\wimgtxt}[3][]{%
+   \pdftooltip{%
+        \colorbox{white}{\includegraphics[{#1},alt={#3}]{#2}}%
+   }{#3}
+}
+
+%% Gadget with screen reader alternate text and white background
+\newcommand*{\wgdgtxtt}[3][]{
+   \pdftooltip{%
+            \colorbox{white}{\gadget[{#1}]{#2}}%
+   }{#3}
+}
