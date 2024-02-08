@@ -1,4 +1,4 @@
-\ProvidesPackage{equalspeak}[2024/02 package Equalspeak]
+\ProvidesPackage{equalspeak}[2024/02/07 package Equalspeak]
 
 \usepackage[draft]{pdfcomment}
 % \usepackage{accsupp}  % makes screen reading of math equations.
@@ -34,12 +34,19 @@
 \tcmapto[] \right{}%gobble size of brace
 
 %% READ BRACE
-\tcmapto[] \{{, the set of,}
-\tcmapto[] \}{, end of set,}
+\tcmapto[] \{{ the set of}
+\tcmapto[] \}{ end of set}
 
 %% READ SUB/EXP
-\tcmapto   ^{, raised to the power}
-\tcmapto   _{, sub}
+\tcmapto   ^{ raised to the power}
+\tcmapto   _{ sub}
+\tcmapto   +{ plus}
+\tcmapto   -{ minus}
+
+
+%% READ FRACTION
+\tcmaptomacro[] \cdot\readcdot
+\newcommand\readcdot{\text{ dot }}
 
 %% READ FRACTION
 \tcmaptomacro[] \frac\readfrac

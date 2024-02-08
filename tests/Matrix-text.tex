@@ -1,0 +1,24 @@
+\documentclass[presentation,aspectratio=169]{beamer}
+
+\usepackage{../src/equalspeak}
+
+\begin{document}
+
+\begin{frame}
+%% Math text
+\begin{align*}
+    \pmat{ 5.2 \\ 0 \\ 4.3 }+\pmat{ 1 \\ 1 \\ 1}-
+    a\cdot \pmat{ 5.2 \\ 0 \\ 4.3}+b\pmat{ 1 \\ 1 \\ 1 }
+\end{align*}    
+
+%% Alt text
+\speakifytext
+\begin{center}
+    \pmat{ 5.2 \\ 0 \\ 4.3 }+\pmat{ 1 \\ 1 \\ 1}-
+    a\cdot \pmat{ 5.2 \\ 0 \\ 4.3}+b\pmat{ 1 \\ 1 \\ 1 }
+\end{center}
+\endspeakifytext
+
+\end{frame}
+
+\end{document}
