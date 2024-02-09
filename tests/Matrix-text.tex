@@ -1,24 +1,178 @@
 \documentclass[presentation,aspectratio=169]{beamer}
 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\usetheme[showmaxslides, darkmode]{pureminimalistic}
 \usepackage{../src/equalspeak}
+\usepackage{listings}
 
+\title{Equalspeak: math-aware \LaTeXe ~accessibility (version 0.1 alpha)}
+\author{James B. Wilson}
+\date{\today}
+\setbeamertemplate{footline}{}
 \begin{document}
 
+
+% \begin{frame}
+%     %% Math text
+%     \begin{align*}
+%         \pmat{ 1 \\ 1 }
+%     \end{align*}    
+    
+%     \end{frame}
+    
 \begin{frame}
-%% Math text
+    \titlepage
+\end{frame}
+\begin{frame}
+    The following is a demonstration of using \LaTeXe ~to 
+    help make math communication accessible.
+\end{frame}
+
+\begin{frame}[fragile]
+   In the first example I create the following command in \LaTeXe.
+   Don't worry about what it means but know that many math content 
+   creators communicate in this way.\\
+   \rule{\textwidth}{1pt}
+\begin{lstlisting}
 \begin{align*}
     \pmat{ 5.2 \\ 0 \\ 4.3 }+\pmat{ 1 \\ 1 \\ 1}-
     a\cdot \pmat{ 5.2 \\ 0 \\ 4.3}+b\pmat{ 1 \\ 1 \\ 1 }
 \end{align*}    
+\end{lstlisting}    
+            
+\end{frame}
 
-%% Alt text
-\speakifytext
-\begin{center}
-    \pmat{ 5.2 \\ 0 \\ 4.3 }+\pmat{ 1 \\ 1 \\ 1}-
-    a\cdot \pmat{ 5.2 \\ 0 \\ 4.3}+b\pmat{ 1 \\ 1 \\ 1 }
-\end{center}
-\endspeakifytext
+\begin{frame}
+%% Math text
+Traditional \LaTeXe converts that code into visible symbols 
+as shown below, but when read aloud by standard software 
+it becomes confused, misleading, even wrong.\\
+\rule{\textwidth}{1pt}
+\begin{align*}
+    span\left\{\pmat{ 5.2 \\ 0 \\ 4.3 }, \pmat{ 1 \\ 1 \\ 1}-
+    a\cdot \pmat{ 5.2 \\ 0 \\ 4.3}\right\}
+\end{align*}    
+\end{frame}
+
+\begin{frame} 
+    Now you may not understand the math, and that is not the point!\\[20pt]
+
+    But I can tell you that the way I read the symbols out loud was 
+    wrong, very wrong.  It it can even be worse on other read-aloud 
+    programs. And that is because math symbols are not read left-to-right, 
+    top-to-bottom but use a mix of directions, orders of operations, and 
+    historical pronunciations.
 
 \end{frame}
+
+\begin{frame}
+%% Alt text
+Now without changing any of the content, we instead use Equalspeak 
+to tell \LaTeXe ~ to 
+instead print out words that would be associated with reading the 
+mathematics aloud.  Our example comes out like this.\\[20pt]
+\rule{\textwidth}{1pt}
+
+\speakifytext
+\begin{center}
+    span\left\{\pmat{ 5.2 \\ 0 \\ 4.3 }, \pmat{ 1 \\ 1 \\ 1}-
+    a\cdot \pmat{ 5.2 \\ 0 \\ 4.3}\right\}
+\end{center}
+\endspeakifytext
+\end{frame}
+
+\begin{frame}
+    Yes, that last example might still be confusing, but now 
+    all that confusion is down to what we do or don't yet know about 
+    the math.  It is in fact a faithful description of what the 
+    visual equations tell a reader, but done in words.\\[20pt]
+    
+    
+    The good 
+    new is that math content creators really know how to explain the math 
+    confusion, so we can let them now do what their good at.
+\end{frame}
+
+\begin{frame}
+    It is important to explain that the original content, the 
+    math expression, is the same snippet of \LaTeXe ~ code in both examples.\\[20pt]
+    
+    Thus content creators can write their usual formulas 
+    and then at a later time decide how to output the results, 
+    producing perhaps one or more versions appropriate to the needs 
+    of accessibility.\\
+    
+    There can even be hybrid versions.    
+\end{frame}
+
+\begin{frame}[fragile]
+    The next example concerns images, which because those are 
+    created outside of \LaTeXe ~will require content creators to help 
+    label the image with useful alternative text.  Here is our example.\\[20pt]
+    
+    \rule{\textwidth}{1pt}
+\begin{lstlisting}
+\includegraphic[
+    width=2in, 
+    alt={A cube with exposed faces shown as a gradient of color 
+    changing from red in the lower left, to yellow lower 
+    middle, green lower right, cyan upper right, 
+    blue upper middle, purple upper left, and 
+    white in the center.}]
+    {colorcube.jpg}
+\end{lstlisting}
+        
+\end{frame}
+
+\begin{frame}
+    The result in a visual only mode is an image.  In some viewers 
+    like Adobe Acrobat and Apple Preview this will have also assigned alternate text to the image 
+    so that on mouse over or clicking we get the clarifying information.\\[20pt]
+
+    \rule{\textwidth}{1pt}
+    \wimgtxt[width=2in]{colorcube.jpg}{
+        A cube with exposed faces shown as a gradient of color 
+        changing from red in the lower left, to yellow lower 
+        middle, green lower right, cyan upper right, 
+        blue upper middle, purple upper left, and 
+        white in the center.
+    }
+\end{frame}
+
+\begin{frame}
+    By changing the mode to be read-aloud, \LaTeXe ~can instead 
+    remove the image and print just the alternate text. \\[20pt]
+
+    \rule{\textwidth}{1pt}
+    % \wimgtxt[width=2in]{colorcube.jpg}{
+    %     A cube with exposed faces shown as a gradient of color 
+    %     changing from red in the lower left, to yellow lower 
+    %     middle, green lower right, cyan upper right, 
+    %     blue upper middle, purple upper left, and 
+    %     white in the center.
+    % }
+    A cube with exposed faces shown as a gradient of color 
+        changing from red in the lower left, to yellow lower 
+        middle, green lower right, cyan upper right, 
+        blue upper middle, purple upper left, and 
+        white in the center.
+\end{frame}
+
+\begin{frame}
+    The system is not perfect, in fact there are still a lot of hacks.
+    But we know enough to know it works and will get better.\\[20pt]
+
+    Content creators of mathematics 
+    can use what we have with minimal changes to their normal and 
+    practiced modes of working and achieve this result because 
+    \LaTeXe ~content is dripping with the information necessary 
+    to communicate in numerous modalities. \\[20pt]
+
+    If you have questions or suggestions 
+    we are open to reading \textbf{and} listening.
+\end{frame}
+
 
 \end{document}

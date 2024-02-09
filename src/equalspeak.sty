@@ -46,24 +46,25 @@
 
 %% READ FRACTION
 \tcmaptomacro[] \cdot\readcdot
-\newcommand\readcdot{\text{ dot }}
+\newcommand\readcdot{\text{\small \, times }}
 
 %% READ FRACTION
 \tcmaptomacro[] \frac\readfrac
-\newcommand\readfrac[2]{\text{, the fraction, } #1%
-   \text{, divided by, }#2%
-   \text{, end fraction, }}
+\newcommand\readfrac[2]{\text{\small, the fraction, } #1%
+   \text{\small , divided by, }#2%
+   \text{\small , end fraction, }}
 
 
 %% HACK: pmatrix read
 \newcommand{\pmat}[1]{\begin{pmatrix} #1 \end{pmatrix}}
 % matrix read aloud
 \tcmapto   &{, }
+\tcmapto   ,{ comma }
 \tcmapto   \\{\small end row}
 \tcmaptomacro[] \pmat\readmatrix
 %% ISSUE: Matrices fill up too much of the page when written out so need to wrap in a minipage.
 %% ALSO: because we are overriding `\\` with "end row" need to use `\newline` to end a line.
-\newcommand\readmatrix[1]{\begin{minipage}{\textwidth}\text{\small the matrix, } #1 \text{\small end matrix, }\end{minipage} }
+\newcommand\readmatrix[1]{\begin{minipage}{\textwidth}\text{\small the matrix } #1 \text{\small end matrix, }\end{minipage} }
 
 
 %% THIS BIT OF CODE MAKES IMAGES USE THE "alt=" 

@@ -1,0 +1,16 @@
+The next example concerns images, which because those are
+    created outside of \LaTeXe ~will require content creators to help
+    label the image with useful alternative text.  Here is our example.\\[20pt]
+
+    \rule{\textwidth}{1pt}
+\begin{lstlisting}
+\includegraphic[
+    width=2in,
+    alt={A cube with exposed faces shown as a gradient of color
+    changing from red in the lower left, to yellow lower
+    middle, green lower right, cyan upper right,
+    blue upper middle, purple upper left, and
+    white in the center.}]
+    {colorcube.jpg}
+\end{lstlisting}
+
