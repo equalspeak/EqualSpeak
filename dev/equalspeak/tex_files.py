@@ -19,7 +19,7 @@ def my_clean(s:str):
 		('\v', ' '),
 		('\f', ' '),
 		('\r', ' '),
-		('\ ', ' ')
+		('\\ ', ' ')
 	]
 	for x, y in subs:
 		s = s.replace(x, y)
@@ -29,10 +29,6 @@ def my_clean(s:str):
 	y = list(pat.finditer(s[::-1]))[0]
 	return s[x.span()[0]:len(s) - y.span()[0]]
 
-
-# Merge dictionaries with the same set of keys, whose values are lists
-def merge_dicts(d1:dict, d2:dict) -> dict:
-	return {k: d1[k] + d2[k] for k in d1.keys()}
 
 # Given strings key and s, find all occurrences of key in s and extract the
 # contents of the braces in each instance.
@@ -58,8 +54,8 @@ def get_packages(lines:list[str]) -> tuple[str]:
 	return tuple(sorted(packages))
 
 
-def search_doc(S:str, JUMP=1000, i=0) -> dict:
-	collect = {'math': [], 'envi': []}
+def search(S:str, JUMP=100000, i=0) -> list[tuple]:
+	collect = []
 	all_pats = []
 	for r in ENVS.keys():
 		pattern = re.compile(r)
@@ -77,11 +73,11 @@ def search_doc(S:str, JUMP=1000, i=0) -> dict:
 	except StopIteration:
 		print("Document provided does not compile!")
 		k = len(S) - 1
-	collect[ENVS[r][1]].append(
-		(my_clean(S[j + ENVS[r][2]:k]), r, (i + j + ENVS[r][2], i + k))
+	collect.append(
+		((i + j + ENVS[r][2], i + k), r, my_clean(S[j + ENVS[r][2]:k]))
 	)
-	shift = k + ENVS[r][2]
-	return merge_dicts(collect, search_doc(S[shift:], i=shift))
+	shift = i + k + ENVS[r][2]
+	return collect + search(S[shift:], i=shift)
 
 
 # Main class
@@ -99,6 +95,7 @@ class latexparse:
 			j += 1
 		self.doclines = (i, j)
 		self.packages = get_packages(lines[:i])
+		self._key_strings = None
 		
 	def __repr__(self) -> str:
 		head = f"A LaTeX parser for\n{self.file}" 
@@ -107,10 +104,15 @@ class latexparse:
 			packages += f"\n\t{p} : Not supported"
 		return head + packages
 
-	def convert(self):
+	def key_strings(self) -> list[tuple]:
+		"""
+		Returns a list of stuff.
+		"""
+		if self._key_strings:
+			return self._key_strings
 		S = ''.join(self.lines[self.doclines[0] + 1:self.doclines[1]])
-		d = search_doc(S)
-		return d
+		self._key_strings = search(S)
+		return self._key_strings
 	
 	def document(self):
 		return ''.join(self.lines[self.doclines[0] + 1:self.doclines[1]])
