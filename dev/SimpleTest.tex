@@ -1,0 +1,35 @@
+%% The following is inspired by 
+%% https://tex.stackexchange.com/questions/454944/is-there-screen-reader-software-or-a-built-in-method-that-supports-latex-equat/505462#505462
+%% I'd like to make it work on a broader range of math formulas such as matrices, roots, norms, 
+%% As a basic target I'd like to be able to use this to speak out the equations of linear algebra
+
+\documentclass{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}\usepackage{amssymb, amsthm}
+
+\newcommand{\mymat}[1]{\begin{pmatrix} #1 \end{pmatrix}}
+
+
+\begin{document}
+
+\section{Making \LaTeX{} Math Audibly Legible}
+
+We are trying something new to make \LaTeX\ more readable. We have some inline math, for example, we know that $3^2 + 4^2 = 5^{2}$. Also \(x + y = z\) and the following:
+
+\begin{equation}
+       x_i^2 + y^2 = (z^2 + 1)
+    \end{equation}
+
+    \begin{equation*}
+        \mymat{ 1 & 2 \\ 3 & 4 }
+     \end{equation*} 
+\begin{equation}
+    x_i^2 + y^2 = (z^2 + 1)
+ \end{equation}
+Or this one:
+    \[
+       Z = \frac{x+1}{2}
+    \]
+\end{document}
