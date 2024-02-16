@@ -45,12 +45,13 @@ class latex_parse:
 		"""
 		Returns a speak-tree for the document.
 		"""
-		from .trees import speak_tree, grow_tree
+		from .trees import plant_tree, grow_tree
 		if self._tree:
 			return self._tree
 		S = ''.join(self.lines[self.doclines[0] + 1:self.doclines[1]])
-		T = speak_tree(S, 'document', (self.doclines[0] + 1, self.doclines[1]))
-		self._tree = grow_tree(T)
+		T = plant_tree(S, self.doclines[0] + 1, self.doclines[1])
+		L = list(v for v in T.vertices if v.name != 'document')
+		self._tree = grow_tree(T, leaves=L)
 		return self._tree
 	
 	def document(self, start=0, end=None):

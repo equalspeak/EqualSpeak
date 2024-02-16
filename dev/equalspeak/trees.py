@@ -45,16 +45,6 @@ class speak_tree:
 		return None
 		
 
-ENVS = {
-	r'\$[^$]': (r'\$[^$]', 'inline math', 1),
-	r'\$\$': (r'\$\$', 'displayed math', 2),
-	r'\\\(': (r'\\\)', 'inline math', 2),
-	r'\\\[': (r'\\\]', 'displayed math', 2),
-	r'\\begin{': (r'}', 'envi', 7), 
-	r'^{': (r'}', 'caret', 2), 
-	r'_{': (r'}', 'underscore', 2)
-}
-
 # Remove initial and ending whitespaces and replace tabs, new lines, and double
 # whitespace with one whitespace.
 def my_clean(s:str):
@@ -76,6 +66,7 @@ def my_clean(s:str):
 	return s[x.span()[0]:len(s) - y.span()[0]]
 
 def search(S:str, JUMP=1000, i=0) -> list[tuple]:
+	from .globals import ENVS
 	# A function that takes a string r, compiles it with regex, and returns the
 	# iterable from 'finditer'.
 	str_to_iter = lambda r, a, b: re.compile(r).finditer(S, pos=a, endpos=b)
@@ -118,18 +109,40 @@ def search(S:str, JUMP=1000, i=0) -> list[tuple]:
 	vertex = (S[j:k], env, (i + j, i + k))
 	return [vertex] + search(S[shift:], i=i + shift)
 
+def plant_tree(S:str, a:int, b:int) -> speak_tree:
+	kids = search(S)
+	T = speak_tree(S, 'document', (a, b))
+	return T.add_children(T.root, kids)
+
+def deep_search(S:str, env=None, shift=0):
+	from .globals import OPS, GRPS, ENVS
+	regexpr = '|'.join(OPS + list(GRPS.keys()) + list(ENVS.keys()))
+	l_str_to_iter = lambda X: re.compile(regexpr).finditer(S)
+	try:
+		first = next(l_str_to_iter(OPS))
+	except StopIteration:
+		return []
+	if first.group() in OPS:
+		i, j = first.span()
+		return [
+			(S[:i], env, (shift, shift + i)),
+			(S[i:j], first.group(), (shift + i, shift + j)),
+			(S[j:], env, (shift + j, shift + len(S)))
+		]
+	
+
+
 def grow_tree(T:speak_tree, leaves=None) -> speak_tree:
+	print(leaves)
 	if leaves:
 		v = leaves.pop()
 	else:
 		v = T.root
 		leaves = []
-	print(v)
-	kids = search(v.data)
-	print(kids)
+	kids = deep_search(v.data, env=v.name, shift=v.location[0])
 	if kids:
 		T = T.add_children(v, kids)
-		leaves += list(map(lambda k: T.get_vertex(k[0]), kids))
+		# leaves += list(map(lambda k: T.get_vertex(k[0]), kids))
 	if leaves:
 		return grow_tree(T, leaves=leaves)
 	return T
