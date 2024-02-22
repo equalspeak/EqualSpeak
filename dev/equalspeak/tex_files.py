@@ -60,6 +60,38 @@ class latex_parse:
 	
 	def preamble(self):
 		return ''.join(self.lines[:self.doclines[0]])
+	
+	def no_dollars(self, output_file=None):
+		"""
+		Converts all $ and $$ math modes to \\( and \\[, respectively.
+
+		The default output file is the same as the input file, but with the suffix _nd.
+		"""
+		from .trees import plant_tree
+		if self._tree:
+			return self._tree
+		S = ''.join(self.lines[self.doclines[0] + 1:self.doclines[1]])
+		T = plant_tree(S, self.doclines[0] + 1, self.doclines[1])
+		L1 = [v for v in T.vertices if v.name == 'inline math $']
+		L2 = [v for v in T.vertices if v.name == 'displayed math $$']
+		for v in L2:
+			a, b = v.location 
+			# print(f"Replacing:\n{S[a - 2:b + 2]}\n")
+			S = S[:a - 2] + f'\\[{v.data}\\]' + S[b + 2:]
+		for v in sorted(L1, reverse=True):
+			a, b = v.location 
+			# print(f"Replacing:\n{S[a - 1:b + 1]}\n")
+			S = S[:a - 1] + f'\\({v.data}\\)' + S[b + 1:]
+		if output_file is None:
+			output_file = self.file[:self.file.index('.tex')] + '_nd.tex'
+		with open(output_file, 'w') as f:
+			f.write(self.preamble())
+			f.write("\\begin{document}\n")
+			f.write(S)
+			f.write("\\end{document}\n")
+		print(f"Saved to {output_file}.")
+
+
 
 def read_tex(file:str):
 	with open(file, 'r') as f:

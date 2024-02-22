@@ -1,8 +1,8 @@
 ENVS = {
-	r'\$[^$]': (r'\$[^$]', 'inline math', 1),
-	r'\$\$': (r'\$\$', 'displayed math', 2),
-	r'\\\(': (r'\\\)', 'inline math', 2),
-	r'\\\[': (r'\\\]', 'displayed math', 2),
+	r'\$[^$]': (r'\$[^$]', 'inline math $', 1),
+	r'\$\$': (r'\$\$', 'displayed math $$', 2),
+	r'\\\(': (r'\\\)', 'inline math ()', 2),
+	r'\\\[': (r'\\\]', 'displayed math []', 2),
 	r'\\begin{': (r'}', 'envi', 7), 
 }
 

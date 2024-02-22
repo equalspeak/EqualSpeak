@@ -11,6 +11,9 @@ class speak_vertex:
 
 	def __repr__(self) -> str:
 		return f"{self.name} {self.location}"
+	
+	def __lt__(self, other) -> bool:
+		return self.location[0] < other.location[0]
 
 class speak_tree:
 
