@@ -7,12 +7,63 @@
 \usepackage{tokcycle} % convert math to english-ish
 
 
+
+\usepackage{environ}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Math Overrides
+
+\newcommand{\dospeaktokens}{\speakifytext}
+\newcommand{\stopspeaktokens}{\endspeakifytext}
+
+% \NewEnviron{
+
+\renewenvironment{equation}{
+  \stepcounter{parentequation}
+  % \begin{speakifytext}
+  \begin{center}
+  \begin{minipage}{0.9\textwidth}
+  {\small begin equation \theparentequation}
+  
+}{
+  \\
+  {\small end equation \theparentequation}
+  \end{minipage}
+  \end{center}
+  % \end{speakifytext}
+}
+
+\renewenvironment{pmatrix}{
+  \\
+  \begin{minipage}{0.9\textwidth}
+  {\small begin matrix }
+}{
+  {\small end matrix}
+  \end{minipage} 
+  \\
+}
+
+% \renewcommand{\left}{~the quantity~}
+% \renewcommand{\middle}{~such that,~}
+% \renewcommand{\right}{~end the quantity}
+
+\renewcommand{\in}{~in~}
+\renewcommand{\mathbb}[1]{bold #1}
+\newcommand{\Null}{~null space of:~}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% TOKENIZER
-\tokcycleenvironment\speakifytext
+\tokcycleenvironment\spt
   {\tcremap[x]{##1}}
   {\processtoks{##1}}
   {\tcremap[1]{##1}}
   {\addcytoks{##1}}
+
 \newcommand*\tcmapto[3][\noexpand\pauseafter]{%
   \expandafter\def\csname tcmapto\string#2\endcsname{\text{#3 }#1}}
 \newcommand*\tcmaptomacro[3][\noexpand\pauseafter]{%
@@ -31,10 +82,11 @@
 
 %% READ BRACE
 \tcmapto[] \left{}%gobble size of brace
+\tcmapto[] \middle{}%gobble size of stroke
 \tcmapto[] \right{}%gobble size of brace
 
 %% READ BRACE
-\tcmapto[] \{{ the set of}
+\tcmapto[] \{{ the set of:}
 \tcmapto[] \}{ end of set}
 
 %% READ SUB/EXP
@@ -42,6 +94,7 @@
 \tcmapto   _{ sub}
 \tcmapto   +{ plus}
 \tcmapto   -{ minus}
+\tcmapto   |{ such that}
 
 
 %% READ FRACTION
@@ -58,9 +111,10 @@
 %% HACK: pmatrix read
 \newcommand{\pmat}[1]{\begin{pmatrix} #1 \end{pmatrix}}
 % matrix read aloud
-\tcmapto   &{, }
+\tcmapto   &{next }
 \tcmapto   ,{ comma }
 \tcmapto   \\{\small end row}
+\tcmapto   |{ such that }
 \tcmaptomacro[] \pmat\readmatrix
 %% ISSUE: Matrices fill up too much of the page when written out so need to wrap in a minipage.
 %% ALSO: because we are overriding `\\` with "end row" need to use `\newline` to end a line.
