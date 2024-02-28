@@ -1,0 +1,123 @@
+\AtBeginDocument{\speakify}
+\documentclass{amsart}
+
+%% Equalspeak commands
+\usepackage{tokcycle, environ} % convert math to english-ish
+
+\newcommand\speakify{%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% Math Overrides
+  \RenewEnviron{equation}{%
+    \stepcounter{parentequation}%
+    \begin{center}
+    \begin{minipage}{0.9\textwidth}
+    {\small begin equation \theparentequation}
+    
+    \expandafter\spt\BODY\endspt
+    \\
+    {\small end equation \theparentequation}
+    \end{minipage}
+    \end{center}
+  }
+%
+  \renewenvironment{pmatrix}{
+    \\
+    \begin{minipage}{0.9\textwidth}
+    {\small begin matrix }
+  }{
+    {\small end matrix}
+    \end{minipage} 
+    \\
+  }
+  \renewcommand{\in}{~in~}
+  \renewcommand{\mathbb}[1]{bold ##1}
+  \renewcommand{\Null}{~null space of:~}
+}
+%
+%
+%% TOKENIZER
+\tokcycleenvironment\spt
+  {\tcremap[x]{##1}}
+  {\processtoks{##1}}
+  {\tcremap[1]{##1}}
+  {\addcytoks{##1}}
+%
+\newcommand{\Null}{}
+%
+\newcommand*\tcmapto[3][\noexpand\pauseafter]{%
+  \expandafter\def\csname tcmapto\string#2\endcsname{\text{#3 }#1}}
+\newcommand*\tcmaptomacro[3][\noexpand\pauseafter]{%
+  \expandafter\def\csname tcmapto\string#2\endcsname{#3#1}}
+\newcommand*\tcremap[2][1]{\ifcsname tcmapto\string#2\endcsname
+  \addcytoks[#1]{\csname tcmapto\string#2\endcsname}\else\addcytoks{#2}\fi}
+\newcommand\pauseafter[1]{\tctestifcatnx#1\relax{#1}{#1,}}
+%% READ PARENS
+\tcmapto[] ({, left paren,}
+\tcmapto[] ){, right paren ,}
+%
+%% READ BRACE
+\tcmapto[] \left{}%gobble size of brace
+\tcmapto[] \middle{}%gobble size of stroke
+\tcmapto[] \right{}%gobble size of brace
+%
+%% READ BRACE
+\tcmapto[] \{{ the set of:}
+\tcmapto[] \}{ end of set}
+%
+%% READ SUB/EXP
+\tcmapto   ^{ raised to the power}
+\tcmapto   _{ sub}
+\tcmapto   +{ plus}
+\tcmapto   -{ minus}
+\tcmapto   |{ such that}
+%
+%
+%% READ FRACTION
+\tcmaptomacro[] \cdot\readcdot
+\newcommand\readcdot{\text{\small \, times }}
+%
+%% READ FRACTION
+\tcmaptomacro[] \frac\readfrac
+\newcommand\readfrac[2]{\text{\small, the fraction, } #1%
+   \text{\small , divided by, }#2%
+   \text{\small , end fraction, }}
+%
+%
+% matrix read aloud
+\tcmapto   &{next }
+\tcmapto   ,{ comma }
+\tcmapto   \\{\small end row}
+\tcmapto   |{ such that }
+%
+
+\title{Latex gives you options}
+
+\author{James B.\ Wilson}
+
+\date{\today}
+
+\begin{document}
+\maketitle 
+For some people seeing an expression in symbols does a better job than words.  For example:
+\begin{equation}
+    \Null
+    \begin{pmatrix}
+        1 & 1 & 2\\ 2 & 2 & 4
+    \end{pmatrix}
+    = \left\{
+        a\cdot
+        \begin{pmatrix}
+            1 \\ 0 \\ -\frac{1}{2}
+        \end{pmatrix}
+        +
+        b\cdot
+        \begin{pmatrix}
+            1 \\ -1 \\ 0 
+        \end{pmatrix}    
+        :
+        a,b\in \mathbb{R}
+        \right\}        
+\end{equation}
+But if you cannot see the expression or make out the symbols then you might prefer the words.
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
