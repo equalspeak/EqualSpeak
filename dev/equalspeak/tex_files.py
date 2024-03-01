@@ -1,38 +1,4 @@
-import re
 from functools import reduce, partial
-
-ENVS = {
-	r'\$[^$]': (r'\$[^$]', 'math', 1),
-	r'\$\$': (r'\$\$', 'math', 2),
-	r'\\\(': (r'\\\)', 'math', 2),
-	r'\\\[': (r'\\\]', 'math', 2),
-	r'\\begin{': (r'}', 'envi', 7)
-}
-
-# Remove initial and ending whitespaces and replace tabs, new lines, and double
-# whitespace with one whitespace.
-def my_clean(s:str):
-	subs = [			# All different forms of whitespace.
-		('\t', ' '),
-		('\n', ' '),
-		('  ', ' '),
-		('\v', ' '),
-		('\f', ' '),
-		('\r', ' '),
-		('\ ', ' ')
-	]
-	for x, y in subs:
-		s = s.replace(x, y)
-	# Remove initial and ending whitespaces.
-	pat = re.compile(r'[^\s]')
-	x = list(pat.finditer(s))[0]
-	y = list(pat.finditer(s[::-1]))[0]
-	return s[x.span()[0]:len(s) - y.span()[0]]
-
-
-# Merge dictionaries with the same set of keys, whose values are lists
-def merge_dicts(d1:dict, d2:dict) -> dict:
-	return {k: d1[k] + d2[k] for k in d1.keys()}
 
 # Given strings key and s, find all occurrences of key in s and extract the
 # contents of the braces in each instance.
@@ -57,68 +23,76 @@ def get_packages(lines:list[str]) -> tuple[str]:
 		packages += s.split(',')
 	return tuple(sorted(packages))
 
-
-def search_doc(S:str, JUMP=1000, i=0) -> dict:
-	collect = {'math': [], 'envi': []}
-	all_pats = []
-	for r in ENVS.keys():
-		pattern = re.compile(r)
-		all_pats += [
-			(p.span()[0], r) for p in pattern.finditer(S, endpos=JUMP)
-		]
-	if len(all_pats) == 0: 
-		return collect
-	all_pats = sorted(all_pats)
-	j, r = all_pats[0]
-	end_pat = re.compile(ENVS[r][0])
-	it = end_pat.finditer(S, pos=j + 1)
-	try:
-		k = next(it).span()[0]
-	except StopIteration:
-		print("Document provided does not compile!")
-		k = len(S) - 1
-	collect[ENVS[r][1]].append(
-		(my_clean(S[j + ENVS[r][2]:k]), r, (i + j + ENVS[r][2], i + k))
-	)
-	shift = k + ENVS[r][2]
-	return merge_dicts(collect, search_doc(S[shift:], i=shift))
-
-
 # Main class
-class latexparse:
+class latex_parse:
 
 	def __init__(self, lines=[], file=None) -> None:
 		self.lines = lines
 		self.file = file
-		# Find 'begin document'
-		i = 0
-		while i < len(lines) and not r'\begin{document}' in lines[i]:
-			i += 1
-		j = i + 1
-		while j < len(lines) and not r'\end{document}' in lines[j]:
-			j += 1
-		self.doclines = (i, j)
-		self.packages = get_packages(lines[:i])
+		docline = lambda l: r'\begin{document}' in l or r'\end{document}' in l
+		self.doclines = tuple(
+			map(lambda s: lines.index(s), filter(docline, lines))
+		)
+		self.packages = get_packages(lines[:self.doclines[0]])
+		self._tree = None
 		
 	def __repr__(self) -> str:
-		head = f"A LaTeX parser for\n{self.file}" 
-		packages = ""
-		for p in self.packages:
-			packages += f"\n\t{p} : Not supported"
-		return head + packages
+		return f"A LaTeX parser for\n{self.file}" + ''.join(
+			map(lambda p: f"\n\t{p} : Not supported", self.packages)
+		)
 
-	def convert(self):
+	def get_tree(self) -> list[tuple]:
+		"""
+		Returns a speak-tree for the document.
+		"""
+		from .trees import plant_tree, grow_tree
+		if self._tree:
+			return self._tree
 		S = ''.join(self.lines[self.doclines[0] + 1:self.doclines[1]])
-		d = search_doc(S)
-		return d
+		T = plant_tree(S, self.doclines[0] + 1, self.doclines[1])
+		L = list(v for v in T.vertices if v.name != 'document')
+		self._tree = grow_tree(T, leaves=L)
+		return self._tree
 	
-	def document(self):
-		return ''.join(self.lines[self.doclines[0] + 1:self.doclines[1]])
+	def document(self, start=0, end=None):
+		text = ''.join(self.lines[self.doclines[0] + 1:self.doclines[1]])
+		return text[start:end]
 	
 	def preamble(self):
 		return ''.join(self.lines[:self.doclines[0]])
+	
+	def no_dollars(self, output_file=None):
+		"""
+		Converts all $ and $$ math modes to \\( and \\[, respectively.
+
+		The default output file is the same as the input file, but with the suffix _nd.
+		"""
+		from .trees import plant_tree
+		if self._tree:
+			return self._tree
+		S = ''.join(self.lines[self.doclines[0] + 1:self.doclines[1]])
+		T = plant_tree(S, self.doclines[0] + 1, self.doclines[1])
+		L1 = [v for v in T.vertices if v.name == 'inline math $']
+		L2 = [v for v in T.vertices if v.name == 'displayed math $$']
+		for v in L2:
+			a, b = v.location 
+			# print(f"Replacing:\n{S[a - 2:b + 2]}\n")
+			S = S[:a - 2] + f'\\[{v.data}\\]' + S[b + 2:]
+		for v in sorted(L1, reverse=True):
+			a, b = v.location 
+			# print(f"Replacing:\n{S[a - 1:b + 1]}\n")
+			S = S[:a - 1] + f'\\({v.data}\\)' + S[b + 1:]
+		if output_file is None:
+			output_file = self.file[:self.file.index('.tex')] + '_nd.tex'
+		with open(output_file, 'w') as f:
+			f.write(self.preamble())
+			f.write("\\begin{document}\n")
+			f.write(S)
+			f.write("\\end{document}\n")
+		print(f"Saved to {output_file}.")
+
+
 
 def read_tex(file:str):
 	with open(file, 'r') as f:
-		return latexparse(lines=f.readlines(), file=file)
-
+		return latex_parse(lines=f.readlines(), file=file)
